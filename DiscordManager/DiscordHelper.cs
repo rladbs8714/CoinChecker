@@ -158,7 +158,7 @@ namespace DiscordManager
 
             // 디스코드 봇 클라이언트 시작
             _client = new DiscordSocketClient();
-            _log.Info(LOG_TYPE, doc, "디스코드 봇 클라이언트 생성");
+            _LOG.Info(LOG_TYPE, doc, "디스코드 봇 클라이언트 생성");
             Task.Run(async () =>
             {
                 await _client.LoginAsync(TokenType.Bot, TOKEN);
@@ -172,7 +172,7 @@ namespace DiscordManager
             while (_client.Guilds.Count == 0)
                 Thread.Sleep(1);
             _isWarking = true;
-            _log.Info(LOG_TYPE, doc, "디스코드 봇 클라이언트 시작");
+            _LOG.Info(LOG_TYPE, doc, "디스코드 봇 클라이언트 시작");
 
             // 디스코드 메시지 채널 생성
             Task.Run(async () =>
@@ -185,7 +185,7 @@ namespace DiscordManager
 
                 while (_messageChannels.Values.Any(x => x == null))
                 {
-                    _log.Warning(LOG_TYPE, doc, $"디스코드 메시지 채널 생성에 실패하여 재시도 중입니다. [{count++}]");
+                    _LOG.Warning(LOG_TYPE, doc, $"디스코드 메시지 채널 생성에 실패하여 재시도 중입니다. [{count++}]");
 
                     _messageChannels[EMarket.Upbit]   = await _client.GetChannelAsync(upbitChID)   as IMessageChannel;
                     _messageChannels[EMarket.Bithumb] = await _client.GetChannelAsync(bithumbChID) as IMessageChannel;
@@ -193,7 +193,7 @@ namespace DiscordManager
                     Thread.Sleep(2000);
                 }
 
-                _log.Info(LOG_TYPE, doc, "디스코드 메시지 채널 생성 성공");
+                _LOG.Info(LOG_TYPE, doc, "디스코드 메시지 채널 생성 성공");
             });
 
             // 파이프 연결
@@ -203,9 +203,9 @@ namespace DiscordManager
                 throw new IniDataException($"[{pipeSection}]섹션의 [{nameof(name)}]의 값을 찾을 수 없거나 공백입니다.");
             PIPE_NAME = name;
 
-            _log.Info(LOG_TYPE, doc, "서버와 파이프 연결 시도");
+            _LOG.Info(LOG_TYPE, doc, "서버와 파이프 연결 시도");
             PipeManager.Instance.Clients.Add(PIPE_NAME, new PipeClient(PIPE_NAME, PipeDirection.InOut));
-            _log.Info(LOG_TYPE, doc, "서버와 파이프 연결 성공");
+            _LOG.Info(LOG_TYPE, doc, "서버와 파이프 연결 성공");
 
             // 메시지 수신 대기
             Task.Run(ReceivePipeMessageLoop);
@@ -235,7 +235,7 @@ namespace DiscordManager
                        _messageChannels.Values.Any(x => x == null)) 
                     Thread.Sleep(1);
 
-                _log.Info(LOG_TYPE, doc, "디스코드 메시지 큐 작업 시작");
+                _LOG.Info(LOG_TYPE, doc, "디스코드 메시지 큐 작업 시작");
 
                 while (true)
                 {
@@ -243,7 +243,7 @@ namespace DiscordManager
                         _messageChannels[msgData.Market] != null)
                     {
                         _ = await _messageChannels[msgData.Market].SendMessageAsync(msgData.Message);
-                        _log.Info(LOG_TYPE, doc, $"디스코드 봇이 메시지를 발송했습니다.\nmarket: {msgData.Market}\ncontent: {msgData.Message}");
+                        _LOG.Info(LOG_TYPE, doc, $"디스코드 봇이 메시지를 발송했습니다.\nmarket: {msgData.Market}\ncontent: {msgData.Message}");
                     }
 
                     Thread.Sleep(1);
@@ -261,7 +261,7 @@ namespace DiscordManager
         {
             string doc = MethodBase.GetCurrentMethod().Name;
 
-            _log.Info(LOG_TYPE, doc, $"메시지 Enqueue");
+            _LOG.Info(LOG_TYPE, doc, $"메시지 Enqueue");
 
             _messageQueue.Enqueue(new DiscordMessageData()
             {
@@ -284,7 +284,7 @@ namespace DiscordManager
                 if (string.IsNullOrEmpty(read))
                     continue;
 
-                _log.Info(LOG_TYPE, doc, $"서버에서 메시지를 받았습니다.\n{read}");
+                _LOG.Info(LOG_TYPE, doc, $"서버에서 메시지를 받았습니다.\n{read}");
 
                 // 서버에서 수신한 명령어 처리
                 // 지금 당장은 그대로 메시지를 디스코드에 표시한다.

@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using RestSharp;
 using Generalibrary;
 
-namespace AutoNewBitcoinChecker
+namespace BitcoinChecker
 {
     public enum ERestMethod
     {

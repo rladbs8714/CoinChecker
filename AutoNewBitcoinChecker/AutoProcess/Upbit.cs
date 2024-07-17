@@ -1,9 +1,10 @@
 ﻿using System.IO.Pipes;
 using System.Reflection;
 using System.Text.Json;
+using BitcoinChecker.Core;
 using Generalibrary;
 
-namespace AutoNewBitcoinChecker
+namespace BitcoinChecker
 {
     /*
      *  ===========================================================================
@@ -98,7 +99,7 @@ namespace AutoNewBitcoinChecker
         /// <summary>
         /// 자동 프로세스 시작
         /// </summary>
-        public void Start(bool isWinform = true)
+        public void StartAutoProcess(bool isWinform = true)
         {
             string doc = MethodBase.GetCurrentMethod().Name;
 

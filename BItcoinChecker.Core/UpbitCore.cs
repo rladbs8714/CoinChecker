@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Generalibrary;
 
-namespace AutoNewBitcoinChecker
+namespace BitcoinChecker.Core
 {
     /*
      *  ===========================================================================
@@ -88,12 +88,7 @@ namespace AutoNewBitcoinChecker
 
         private const string LOG_TYPE = "UPBIT_CORE";
 
-
-        // ====================================================================
-        // FIELDS
-        // ====================================================================
-
-        private ILogManager _log = LogManager.Instance;
+        private readonly ILogManager LOG = LogManager.Instance;
 
 
         // ====================================================================
@@ -130,7 +125,7 @@ namespace AutoNewBitcoinChecker
             }
             catch (Exception ex)
             {
-                _log.Warning(LOG_TYPE, doc, ex.Message);
+                LOG.Warning(LOG_TYPE, doc, ex.Message);
                 return false;
             }
 
@@ -165,7 +160,7 @@ namespace AutoNewBitcoinChecker
             }
             catch (Exception ex)
             {
-                _log.Warning(LOG_TYPE, doc, ex.Message);
+                LOG.Warning(LOG_TYPE, doc, ex.Message);
                 return false;
             }
 
@@ -284,13 +279,13 @@ namespace AutoNewBitcoinChecker
             catch (Exception ex)
             {
                 var err = JsonSerializer.Deserialize<Error_VO>(json);
-                _log.Error(LOG_TYPE, doc, $"요청이 정상적으로 이루어지지 않았습니다.\n{err.Name}: {err.Message}", exception: ex);
+                LOG.Error(LOG_TYPE, doc, $"요청이 정상적으로 이루어지지 않았습니다.\n{err.Name}: {err.Message}", exception: ex);
                 return false;
             }
 
             if (orders == null)
             {
-                _log.Error(LOG_TYPE, doc, $"요청이 정상적으로 이루어지지 않았습니다.");
+                LOG.Error(LOG_TYPE, doc, $"요청이 정상적으로 이루어지지 않았습니다.");
                 return false;
             }
 
@@ -324,7 +319,7 @@ namespace AutoNewBitcoinChecker
             }
             catch (Exception ex)
             {
-                _log.Warning(LOG_TYPE, doc, ex.Message);
+                LOG.Warning(LOG_TYPE, doc, ex.Message);
                 return false;
             }
 
@@ -338,7 +333,7 @@ namespace AutoNewBitcoinChecker
         /// <summary>
         /// 요청 당시 종목의 스냅샷을 반환한다.
         /// </summary>
-        /// <param name="ticker">요청 당시 종목의 스냅샷</param>
+        /// <param name="tickerCollection">요청 당시 종목의 스냅샷</param>
         /// <param name="marketCode">요청할 종목의 코드 (KRW-BTC)</param>
         /// <returns>성공시 true, 실패시 false</returns>
         public bool TryGetTicker(out TickerCollection_VO? tickerCollection, string marketCode)
@@ -360,7 +355,7 @@ namespace AutoNewBitcoinChecker
             }
             catch (Exception ex)
             {
-                _log.Warning(LOG_TYPE, doc, ex.Message);
+                LOG.Warning(LOG_TYPE, doc, ex.Message);
                 return false;
             }
 
@@ -371,6 +366,61 @@ namespace AutoNewBitcoinChecker
             return true;
         }
 
+        /// <summary>
+        /// 분(minute) 캔들
+        /// </summary>
+        /// <param name="minutesCandles">응답 데이터</param>
+        /// <param name="unit">분 단위</param>
+        /// <param name="market">마켓 코드 (ex. KRW-BTC)</param>
+        /// <param name="to">
+        /// 마지막 캔들 시각 (exclusive).
+        /// ISO8061 포맷(yyyy-MM-dd'T'HH:mm:ss'Z' or yyyy-MM-dd HH:mm:ss). 기본적으로 UTC 기준 시간이며 2023-01-01T00:00:00+09:00 과 같이 KST 시간으로 요청 가능.
+        /// 비워서 요청시 가장 최근 캔들
+        /// </param>
+        /// <param name="count">캔들 개수(최대 200개까지 요청 가능)</param>
+        public bool TryGetMinuteCandles(out MinutesCandles_VO[]? minutesCandles, int unit, string market, string to, int count)
+        {
+            string doc = MethodBase.GetCurrentMethod().Name;
+
+            minutesCandles = null;
+
+            if (string.IsNullOrEmpty(market) || count == 0 || count > 200)
+                return false;
+
+            switch (unit)
+            {
+                case 1:
+                case 3:
+                case 5:
+                case 10:
+                case 15:
+                case 30:
+                case 60:
+                case 240:
+                    break;
+
+                default: 
+                    return false;
+            }
+
+            if (!TryRequest(out string json, $"/v1/candles/minutes/{unit}", ERestMethod.Get, new Dictionary<string, string>() { { "market", market }, { "to", to }, { "count", count.ToString() } }))
+                return false;
+
+            try
+            {
+                minutesCandles = JsonSerializer.Deserialize<MinutesCandles_VO[]>(json);
+            }
+            catch (Exception ex)
+            {
+                LOG.Warning(LOG_TYPE, doc, ex.Message);
+                return false;
+            }
+
+            if (minutesCandles == null)
+                return false;
+
+            return true;
+        }
 
         // ====================================================================
         // METHODS - PRIVATE

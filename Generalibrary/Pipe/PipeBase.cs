@@ -1,5 +1,4 @@
 ﻿using Generalibrary.Pipe;
-using System.IO.Pipes;
 using System.Reflection;
 
 namespace Generalibrary
@@ -29,16 +28,16 @@ namespace Generalibrary
         private const string LOG_TYPE = "PipeBase";
 
         protected readonly string PIPE_NAME;
+        /// <summary>
+        /// log
+        /// </summary>
+        protected readonly ILogManager LOG = LogManager.Instance;
 
 
         // ====================================================================
         // FIELDS
         // ====================================================================
 
-        /// <summary>
-        /// log
-        /// </summary>
-        protected ILogManager _log = LogManager.Instance;
         /// <summary>
         /// 파이프 문자열 스트림
         /// </summary>
@@ -102,15 +101,15 @@ namespace Generalibrary
                 try
                 {
                     _streamString.WriteString(message);
-                    _log.Info(LOG_TYPE, doc, $"메시지 전송\n{message}");
+                    LOG.Info(LOG_TYPE, doc, $"메시지 전송\n{message}");
                 }
                 catch (IOException ex)
                 {
-                    _log.Error(LOG_TYPE, doc, $"[{PIPE_NAME}] 파이프의 메시지가 정상적으로 전달되지 않았습니다.", exception: ex);
+                    LOG.Error(LOG_TYPE, doc, $"[{PIPE_NAME}] 파이프의 메시지가 정상적으로 전달되지 않았습니다.", exception: ex);
                 }
                 catch (NullReferenceException ex)
                 {
-                    _log.Error(LOG_TYPE, doc, $"[{PIPE_NAME}] 파이프 문자열 스트림이 NULL 입니다.", exception: ex);
+                    LOG.Error(LOG_TYPE, doc, $"[{PIPE_NAME}] 파이프 문자열 스트림이 NULL 입니다.", exception: ex);
                 }
             }
         }

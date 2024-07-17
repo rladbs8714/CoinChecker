@@ -1,4 +1,4 @@
-﻿namespace AutoNewBitcoinChecker
+﻿namespace BitcoinChecker
 {
     partial class Form1
     {

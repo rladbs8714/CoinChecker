@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AutoNewBitcoinChecker
+namespace BitcoinChecker.Core
 {
     public class TickerCollection_VO
     {

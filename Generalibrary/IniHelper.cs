@@ -1,7 +1,4 @@
-﻿using IniParser;
-using IniParser.Model;
-
-namespace Generalibrary
+﻿namespace Generalibrary
 {
     /*
      *  ===========================================================================
@@ -20,17 +17,19 @@ namespace Generalibrary
      *  < TODO >
      *  
      *  < History >
-     *  2024.06.12 @yoon
+     *  2024.07.08 @yoon
      *  - 최초 작성
+     *  2024.07.15 @yoon
+     *  - iniparser 관련 구문 수정 (iniparser 제작에 의함)
      *  ===========================================================================
      */
 
-    public abstract class IniHelper
+    public class IniHelper
     {
-        private FileIniDataParser? _parser;
-        private IniData? _data = null;
+        // private FileIniDataParser? _parser;
+        // private IniData? _data = null;
 
-        private IniHelper() { }
+        private IniParser _iniParser;
 
         protected IniHelper(string iniPath)
         {
@@ -39,13 +38,24 @@ namespace Generalibrary
             if (!Uri.TryCreate(iniPath, UriKind.Relative, out var uri))
                 throw new ArgumentException("ini파일의 경로가 유효하지 않습니다.");
 
-            _parser = new FileIniDataParser();
-            _data   = _parser.ReadFile(iniPath);
+            //_parser = new FileIniDataParser();
+            //_data   = _parser.ReadFile(iniPath);
+
+            _iniParser = new IniParser(iniPath);
         }
 
+        /// <summary>
+        /// ini 설정 불러오기 <br/>
+        /// <seealso cref="string.Empty"/>를 반환할 수 있기 때문에 유효성 검사를 해야함.
+        /// </summary>
+        /// <param name="section">section</param>
+        /// <param name="key">key</param>
+        /// <returns>value or <seealso cref="string.Empty"/></returns>
         public string GetIniData(string section, string key)
         {
-            return _data[section][key];
+            string? value = _iniParser[section][key];
+            return value == null ? string.Empty : value;
+            // return _data[section][key]; 위 코드가 정상적으로 작동하지 않을 시 사용할 것.
         }
     }
 }

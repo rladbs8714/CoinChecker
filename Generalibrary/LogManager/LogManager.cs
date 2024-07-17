@@ -49,7 +49,7 @@ namespace Generalibrary
         /// <summary>
         /// system.ini path
         /// </summary>
-        private const string INI_PATH = "ini\\log.ini";
+        private const string INI_PATH = "ini\\LOG.ini";
         /// <summary>
         /// log type
         /// </summary>

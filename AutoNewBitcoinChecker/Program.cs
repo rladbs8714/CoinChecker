@@ -1,8 +1,4 @@
-using System.Linq;
-using static AutoNewBitcoinChecker.Accounts_VO;
-using Market = AutoNewBitcoinChecker.MarketAll_VO.Market_VO;
-
-namespace AutoNewBitcoinChecker
+namespace BitcoinChecker
 {
     /*
      *  ===========================================================================
@@ -23,33 +19,20 @@ namespace AutoNewBitcoinChecker
 
     public static class Program
     {
-        public static MarketAll_VO? StartingMarketAll;
-
         /// <summary>
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
         public static void Main()
         {
-            //new UpbitCore(isDebug: true).TryGetAccounts(out var accounts);
-
-            // new UpbitCore(isDebug: true).TryGetMarketAll(out var marketAll);
-
-            // new UpbitCore(isDebug: true).TryGetOrdersChance(out var orderChance, "KRW-BTC");
-
-            // new UpbitCore(isDebug: true).TryGetTicker(out var ticker, "KRW-SHIB");
-
-            // var account = accounts?.Accounts.Find(x => x.Currency == "KRW");
-            // double krw = double.Parse(account?.Balance);
-            // new UpbitCore(isDebug: true).TryOrders(out var order, "KRW-SHIB", UpbitCore.ESide.bid, (krw / ticker.Tickers[0].TradePrice) * 0.9, ticker.Tickers[0].TradePrice, UpbitCore.EOrderType.limit);
-
             // 디스코드 봇 클라이언트 시작
             // DiscordHelper.Instance.Start();
             // 프로그램 시작
             bool withUI = false;
             if (!withUI)
             {
-                new Upbit().Start(withUI);
+                var upbit = new Upbit();
+                upbit.StartAutoProcess(withUI);
 
                 Thread.Sleep(-1);
             }
