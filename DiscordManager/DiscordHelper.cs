@@ -89,12 +89,10 @@ namespace DiscordManager
         // FIELDS
         // ====================================================================
 
-
-
         /// <summary>
         /// 로그
         /// </summary>
-        private ILogManager _log = LogManager.Instance;
+        private ILogManager _LOG = LogManager.Instance;
         /// <summary>
         /// 디스코드 소켓 클라이언트
         /// </summary>

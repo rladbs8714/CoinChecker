@@ -22,7 +22,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BItcoinChecker.Core", "BItc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitcoinChecker.Test", "BitcoinChecker.Test\BitcoinChecker.Test.csproj", "{E63FE90D-13D2-4573-AA7B-BDC245F94790}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitcoinChecker.Extension", "BitcoinChecker.Extension\BitcoinChecker.Extension.csproj", "{CC4EA0F4-6786-4282-B993-A235C0226852}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitcoinChecker.Extension", "BitcoinChecker.Extension\BitcoinChecker.Extension.csproj", "{CC4EA0F4-6786-4282-B993-A235C0226852}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitcoinChecker.Predict.Winform", "BitcoinChecker.Predict.Winform\BitcoinChecker.Predict.Winform.csproj", "{46DC3280-39CC-4D73-835F-EE81C00635D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitcoinChecker.Predict", "BitcoinChecker.Predict\BitcoinChecker.Predict.csproj", "{403909A4-EC9B-4B09-9C12-BC18A4CEED33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,6 +68,14 @@ Global
 		{CC4EA0F4-6786-4282-B993-A235C0226852}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC4EA0F4-6786-4282-B993-A235C0226852}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC4EA0F4-6786-4282-B993-A235C0226852}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46DC3280-39CC-4D73-835F-EE81C00635D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46DC3280-39CC-4D73-835F-EE81C00635D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46DC3280-39CC-4D73-835F-EE81C00635D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46DC3280-39CC-4D73-835F-EE81C00635D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{403909A4-EC9B-4B09-9C12-BC18A4CEED33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{403909A4-EC9B-4B09-9C12-BC18A4CEED33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{403909A4-EC9B-4B09-9C12-BC18A4CEED33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{403909A4-EC9B-4B09-9C12-BC18A4CEED33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

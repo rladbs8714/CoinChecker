@@ -69,7 +69,7 @@ namespace BitcoinChecker.Core
         /// 해당 캔들에서 마지막 틱이 저장된 시각
         /// </summary>
         [JsonPropertyName("timestamp")]
-        public long TimeStamp { get; set; }
+        public long? TimeStamp { get; set; }
 
         /// <summary>
         /// 누적 거래 금액

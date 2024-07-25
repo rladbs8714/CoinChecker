@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ScottPlot.WinForms" Version="5.0.36" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BItcoinChecker.Core\BItcoinChecker.Core.csproj" />
+    <ProjectReference Include="..\BitcoinChecker.Predict\BitcoinChecker.Predict.csproj" />
+    <ProjectReference Include="..\Generalibrary\Generalibrary.csproj" />
+  </ItemGroup>
+
+</Project>

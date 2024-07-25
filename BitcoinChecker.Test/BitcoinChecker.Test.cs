@@ -31,9 +31,12 @@ namespace BitcoinChecker.Test
             bool loop = true;
             int count = 200;
             int loopCount = 1;
-            var startTime = new DateTime(2024, 07, 09, 18, 35, 00);
+            var startTime = new DateTime(2017, 09, 26, 00, 01, 01);
             var endTime = DateTime.Now;
+            string marketCode = "KRW-BTC";
             List<MinutesCandles_VO> candles = new List<MinutesCandles_VO>();
+            StreamWriter sw = new FileInfo($"result\\{marketCode}.csv").AppendText();
+            sw.AutoFlush = true;
             while (loop)
             {
                 int tmpMinutes = (int)(endTime - startTime).TotalMinutes;
@@ -46,17 +49,22 @@ namespace BitcoinChecker.Test
                 startTime = startTime.AddMinutes(count);
                 string time = startTime.ToString("yyyy-MM-dd HH:mm:ss");
 
-                new UpbitCore(isDebug: true).TryGetMinuteCandles(out var mCandles, 1, "KRW-ENS", time, count);
+                new UpbitCore(isDebug: true).TryGetMinuteCandles(out var mCandles, 1, marketCode, time, count);
                 if (mCandles == null)
                     break;
 
-                candles.AddRange(mCandles);
-                LogManager.Instance.Info(LOG_TYPE, doc, $"[완료:{loopCount++,3}] {time}");
+                // candles.AddRange(mCandles);
+                // LogManager.Instance.Info(LOG_TYPE, doc, $"[완료:{loopCount++,3}] {time}");
+                Console.WriteLine(time);
+
+                foreach (var price in mCandles.Reverse().Select(e => e.TradePrice))
+                    sw.WriteLine(price);
 
                 Thread.Sleep(110);
             }
+            Console.WriteLine("완료");
 
-            ConvertJsonToCsv<MinutesCandles_VO>(candles, true);
+            // ConvertJsonToCsv<MinutesCandles_VO>(candles, true);
             // Console.WriteLine(csv);
         }
 

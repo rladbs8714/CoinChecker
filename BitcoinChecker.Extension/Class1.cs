@@ -1,7 +1,9 @@
-﻿namespace BitcoinChecker.Extension
-{
-    public class 
-    {
+﻿using BitcoinChecker.Core;
 
+namespace BitcoinChecker.Extension
+{
+    public static class UpbitExtension
+    {
+        
     }
 }

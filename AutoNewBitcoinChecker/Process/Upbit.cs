@@ -1,6 +1,8 @@
 ﻿using System.IO.Pipes;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using BitcoinChecker.Core;
 using Generalibrary;
 
@@ -62,32 +64,35 @@ namespace BitcoinChecker
         // CONSTRUCTORS
         // ====================================================================
 
-        public Upbit() : base(Path.Combine(Environment.CurrentDirectory, INI_PATH))
+        public Upbit(bool discordPipeStart = true) : base(Path.Combine(Environment.CurrentDirectory, INI_PATH))
         {
             string doc = MethodBase.GetCurrentMethod().Name;
 
             // 디스코드 봇 마이크로 서비스 실행
-            bool    use;
-            string  section = $"PIPE:DISCORD";
-            if (bool.TryParse(GetIniData(section, nameof(use)), out use) && use)
+            if (discordPipeStart)
             {
-                string name = GetIniData(section, nameof(name));
-                if (string.IsNullOrEmpty(name))
-                    throw new IniDataException($"[{section}]섹션의 [{nameof(name)}]값을 찾을 수 없거나 공백입니다.");
-                DISCORD_PIPE_NAME = name;
+                bool   use;
+                string section = $"PIPE:DISCORD";
+                if (bool.TryParse(GetIniData(section, nameof(use)), out use) && use)
+                {
+                    string name = GetIniData(section, nameof(name));
+                    if (string.IsNullOrEmpty(name))
+                        throw new IniDataException($"[{section}]섹션의 [{nameof(name)}]값을 찾을 수 없거나 공백입니다.");
+                    DISCORD_PIPE_NAME = name;
 
-                string path = GetIniData(section, nameof(path));
-                if (string.IsNullOrEmpty(path))
-                    throw new IniDataException($"[{section}]섹션의 [{nameof(path)}]값을 찾을 수 없거나 공백입니다.");
+                    string path = GetIniData(section, nameof(path));
+                    if (string.IsNullOrEmpty(path))
+                        throw new IniDataException($"[{section}]섹션의 [{nameof(path)}]값을 찾을 수 없거나 공백입니다.");
 
-                _log.Info(LOG_TYPE, doc, "디스코드 봇 서비스 실행");
-                _log.Info(LOG_TYPE, doc, "디스코드 봇 서비스 파이프 연결 시도");
-                PipeManager.Instance.Servers.Add(DISCORD_PIPE_NAME, new PipeServer(DISCORD_PIPE_NAME, path, PipeDirection.InOut));
-                _log.Info(LOG_TYPE, doc, "디스코드 봇 서비스 파이프 연결 성공");
-            }
-            else
-            {
-                throw new IniDataException($"[{section}]섹션의 [{nameof(use)}]값이 형식에 맞지 않게 입력되어있습니다.");
+                    _log.Info(LOG_TYPE, doc, "디스코드 봇 서비스 실행");
+                    _log.Info(LOG_TYPE, doc, "디스코드 봇 서비스 파이프 연결 시도");
+                    PipeManager.Instance.Servers.Add(DISCORD_PIPE_NAME, new PipeServer(DISCORD_PIPE_NAME, path, PipeDirection.InOut));
+                    _log.Info(LOG_TYPE, doc, "디스코드 봇 서비스 파이프 연결 성공");
+                }
+                else
+                {
+                    throw new IniDataException($"[{section}]섹션의 [{nameof(use)}]값이 형식에 맞지 않게 입력되어있습니다.");
+                }
             }
         }
 
@@ -153,6 +158,65 @@ namespace BitcoinChecker
         public void Exit()
         {
             
+        }
+
+        public bool TryGetCandlesCsv(string marketCode, int unit, DateTime startTime, DateTime endTime)
+        {
+            string doc = MethodBase.GetCurrentMethod().Name;
+
+            if (string.IsNullOrEmpty(marketCode))
+                return false;
+
+            switch (unit)
+            {
+                case 1:
+                case 3:
+                case 5:
+                case 10:
+                case 15:
+                case 30:
+                case 60:
+                case 240:
+                    break;
+
+                default:
+                    return false;
+            }
+
+            if (startTime > endTime)
+                return false;
+
+            bool loop = true;
+            int count = 200;
+            int loopCount = 1;
+            DateTime time = startTime;
+            List<MinutesCandles_VO> candles = new List<MinutesCandles_VO>();
+            while (loop)
+            {
+                int tmpMinutes = (int)(endTime - time).TotalMinutes;
+                if (tmpMinutes < count)
+                {
+                    count = tmpMinutes;
+                    loop = false;
+                }
+
+                time = time.AddMinutes(count);
+                string timeStr = time.ToString("yyyy-MM-dd HH:mm:ss");
+
+                new UpbitCore(isDebug: true).TryGetMinuteCandles(out var mCandles, 1, marketCode, timeStr, count);
+                if (mCandles == null)
+                    break;
+
+                candles.AddRange(mCandles.Reverse());
+                LogManager.Instance.Info(LOG_TYPE, doc, $"{marketCode} - [완료:{loopCount++}] {timeStr}");
+
+                Thread.Sleep(105);
+            }
+            _log.Info(LOG_TYPE, doc, $"캔들({--loopCount}) 받아오기 완료 ({startTime} ~ {endTime})");
+
+            ConvertJsonToCsv<MinutesCandles_VO>(candles, marketCode);
+
+            return true;
         }
 
         /// <summary>
@@ -278,6 +342,81 @@ namespace BitcoinChecker
             }
 
             _isStartCoinsLoged = false;
+        }
+
+        /// <summary>
+        /// Json to csv <br />
+        /// 이 메서드는 동일한 요소를 가지고 있는 항목이 배열로 들고 있는 Json일 때 정상적으로 작동한다. <br />
+        /// <code>
+        /// e.g.
+        /// [
+        ///     {
+        ///         "market": "KRW-ENS",
+        ///         "price": 38040
+        ///     },
+        ///     {
+        ///         "market": "KRW-ENS",
+        ///         "price": 38050
+        ///     },
+        ///     {
+        ///         "market": "KRW-ENS",
+        ///         "price": 38060
+        ///     }
+        /// ]
+        /// </code>
+        /// </summary>
+        /// <param name="json">origianl json</param>
+        /// <returns>csv or <seealso cref="string.Empty"/></returns>
+        private string ConvertJsonToCsv<T>(List<T> json, string fileName)
+        {
+            string doc = MethodBase.GetCurrentMethod().Name;
+
+            if (json == null)
+                return string.Empty;
+
+            StringBuilder csv = new StringBuilder();
+            List<string> properties = new List<string>();
+
+            var members = typeof(T).GetProperties();
+            foreach (MemberInfo member in members)
+            {
+                JsonPropertyNameAttribute? attr = member.GetCustomAttribute<JsonPropertyNameAttribute>();
+
+                if (attr == null)
+                    continue;
+
+                csv.Append($"{attr.Name},");
+                properties.Add(member.Name);
+            }
+            csv.Length--;
+            csv.Append(Environment.NewLine);
+
+            foreach (var elem in json)
+            {
+                var type = elem.GetType();
+                foreach (string header in properties)
+                {
+                    string? value = type.GetProperty(header).GetValue(elem).ToString();
+
+                    if (string.IsNullOrEmpty(value))
+                        continue;
+
+                    csv.Append($"{value},");
+                }
+
+                csv.Length--;
+                csv.Append(Environment.NewLine);
+            }
+
+            if (!Directory.Exists("file"))
+                Directory.CreateDirectory("file");
+
+            using var sw = File.CreateText($"file\\{fileName}.csv");
+            sw.Write(csv.ToString());
+            _log.Info(LOG_TYPE, doc, $"csv 저장 완료");
+
+
+            return csv.ToString();
         }
     }
 }

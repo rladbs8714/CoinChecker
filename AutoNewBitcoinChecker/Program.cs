@@ -1,3 +1,6 @@
+using BitcoinChecker.Core;
+using System.Linq;
+
 namespace BitcoinChecker
 {
     /*
@@ -31,10 +34,28 @@ namespace BitcoinChecker
             bool withUI = false;
             if (!withUI)
             {
-                var upbit = new Upbit();
-                upbit.StartAutoProcess(withUI);
+                var upbit = new Upbit(discordPipeStart: false);
+                // upbit.StartAutoProcess(withUI);
 
-                Thread.Sleep(-1);
+                if (new UpbitCore().TryGetMarketAll(out var marketCollection))
+                {
+                    DateTime time = DateTime.Now;
+                    var marketsAll = marketCollection.Markets.Select(x => x.Market);
+                    var krwMarkets = marketsAll.ToList().FindAll(x => x.Contains("KRW"));
+                    
+                    for (int i = 0; i < krwMarkets.Count; i++)
+                    {
+                        string marketCode = krwMarkets[i];
+                        
+                        upbit.TryGetCandlesCsv(marketCode, 1,
+                                       time.AddMonths(-1),
+                                       time);
+
+                        Console.WriteLine($"현재 진행도 {i + 1}/{krwMarkets.Count}");
+                    }
+                }
+
+                // Thread.Sleep(-1);
             }
             else
             {
