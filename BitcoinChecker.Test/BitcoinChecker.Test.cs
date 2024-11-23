@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using Generalibrary;
+using BItcoinChecker.Core;
 
 namespace BitcoinChecker.Test
 {
@@ -30,11 +31,10 @@ namespace BitcoinChecker.Test
 
             bool loop = true;
             int count = 200;
-            int loopCount = 1;
-            var startTime = new DateTime(2017, 09, 26, 00, 01, 01);
+            var startTime = DateTime.Now.AddMonths(-3);
             var endTime = DateTime.Now;
             string marketCode = "KRW-BTC";
-            List<MinutesCandles_VO> candles = new List<MinutesCandles_VO>();
+            List<SecondsCandles_VO> candles = new List<SecondsCandles_VO>();
             StreamWriter sw = new FileInfo($"result\\{marketCode}.csv").AppendText();
             sw.AutoFlush = true;
             while (loop)
@@ -46,10 +46,10 @@ namespace BitcoinChecker.Test
                     loop = false;
                 }
 
-                startTime = startTime.AddMinutes(count);
+                startTime = startTime.AddSeconds(count);
                 string time = startTime.ToString("yyyy-MM-dd HH:mm:ss");
 
-                new UpbitCore(isDebug: true).TryGetMinuteCandles(out var mCandles, 1, marketCode, time, count);
+                new UpbitCore(isDebug: true).TryGetSecondCandles(out var mCandles, marketCode, time, count);
                 if (mCandles == null)
                     break;
 
@@ -57,15 +57,15 @@ namespace BitcoinChecker.Test
                 // LogManager.Instance.Info(LOG_TYPE, doc, $"[완료:{loopCount++,3}] {time}");
                 Console.WriteLine(time);
 
-                foreach (var price in mCandles.Reverse().Select(e => e.TradePrice))
-                    sw.WriteLine(price);
+                foreach (var candle in mCandles.Reverse())
+                    sw.WriteLine($"{candle.CandleDateTimeUTC},{candle.TradePrice},{candle.CandleAccTradeVolume}");
 
                 Thread.Sleep(110);
             }
             Console.WriteLine("완료");
 
-            // ConvertJsonToCsv<MinutesCandles_VO>(candles, true);
-            // Console.WriteLine(csv);
+            //ConvertJsonToCsv<SecondsCandles_VO>(candles, true);
+            //Console.WriteLine(csv);
         }
 
         // =====================================================================

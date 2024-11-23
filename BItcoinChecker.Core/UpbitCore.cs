@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Text.Json;
+using BItcoinChecker.Core;
 using Generalibrary;
 
 namespace BitcoinChecker.Core
@@ -373,8 +374,8 @@ namespace BitcoinChecker.Core
         /// <param name="unit">분 단위</param>
         /// <param name="market">마켓 코드 (ex. KRW-BTC)</param>
         /// <param name="to">
-        /// 마지막 캔들 시각 (exclusive).
-        /// ISO8061 포맷(yyyy-MM-dd'T'HH:mm:ss'Z' or yyyy-MM-dd HH:mm:ss). 기본적으로 UTC 기준 시간이며 2023-01-01T00:00:00+09:00 과 같이 KST 시간으로 요청 가능.
+        /// 마지막 캔들 시각 (exclusive). <br />
+        /// ISO8061 포맷(yyyy-MM-dd'T'HH:mm:ss'Z' or yyyy-MM-dd HH:mm:ss). 기본적으로 UTC 기준 시간이며 2023-01-01T00:00:00+09:00 과 같이 KST 시간으로 요청 가능. <br />
         /// 비워서 요청시 가장 최근 캔들
         /// </param>
         /// <param name="count">캔들 개수(최대 200개까지 요청 가능)</param>
@@ -418,6 +419,42 @@ namespace BitcoinChecker.Core
 
             if (minutesCandles == null)
                 return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 분(minute) 캔들
+        /// </summary>
+        /// <param name="secondsCandles">응답 데이터</param>
+        /// <param name="market">마켓 코드 (ex. KRW-BTC)</param>
+        /// <param name="to">
+        /// 마지막 캔들 시각 (exclusive). <br />
+        /// ISO8061 포맷(yyyy-MM-dd'T'HH:mm:ss'Z' or yyyy-MM-dd HH:mm:ss). 기본적으로 UTC 기준 시간이며 2023-01-01T00:00:00+09:00 과 같이 KST 시간으로 요청 가능. <br />
+        /// 비워서 요청시 가장 최근 캔들
+        /// </param>
+        /// <param name="count">캔들 개수(최대 200개까지 요청 가능)</param>
+        public bool TryGetSecondCandles(out SecondsCandles_VO[]? secondsCandles, string market, string to, int count)
+        {
+            string doc = MethodBase.GetCurrentMethod().Name;
+
+            secondsCandles = null;
+
+            if (string.IsNullOrEmpty(market) || count == 0 || count > 200)
+                return false;
+
+            if (!TryRequest(out string json, $"/v1/candles/seconds", ERestMethod.Get, new Dictionary<string, string>() { { "market", market }, { "to", to }, { "count", count.ToString() } }))
+                return false;
+
+            try
+            {
+                secondsCandles = JsonSerializer.Deserialize<SecondsCandles_VO[]>(json);
+            }
+            catch (Exception ex)
+            {
+                LOG.Warning(LOG_TYPE, doc, ex.Message);
+                return false;
+            }
 
             return true;
         }

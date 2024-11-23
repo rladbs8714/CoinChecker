@@ -21,6 +21,9 @@
      *  - 최초 작성
      *  2024.07.15 @yoon
      *  - iniparser 관련 구문 수정 (iniparser 제작에 의함)
+     *  2024.11.22 @yoon
+     *  - 정적으로 GetIniData를 호출해야 하는 상황이 있어 추가함
+     *  - 기타 코드 수정
      *  ===========================================================================
      */
 
@@ -55,7 +58,30 @@
         {
             string? value = _iniParser[section][key];
             return value == null ? string.Empty : value;
-            // return _data[section][key]; 위 코드가 정상적으로 작동하지 않을 시 사용할 것.
+        }
+
+        /// <summary>
+        /// ini 설정 불러오기 <br/>
+        /// <seealso cref="string.Empty"/>를 반환할 수 있기 때문에 유효성 검사를 해야함.
+        /// </summary>
+        /// <param name="iniPath">ini파일 경로</param>
+        /// <param name="section">section</param>
+        /// <param name="key">key</param>
+        /// <returns>value or <seealso cref="string.Empty"/></returns>
+        public static string GetIniData(string iniPath, string section, string key)
+        {
+            if (string.IsNullOrEmpty(iniPath))
+                throw new ArgumentNullException("ini파일의 경로를 입력하지 않았습니다.");
+            if (!Uri.TryCreate(iniPath, UriKind.Relative, out var uri))
+                throw new ArgumentException("ini파일의 경로가 유효하지 않습니다.");
+
+            //_parser = new FileIniDataParser();
+            //_data   = _parser.ReadFile(iniPath);
+
+            IniParser iniParser = new IniParser(iniPath);
+
+            string? value = iniParser[section][key];
+            return string.IsNullOrEmpty(value) ? string.Empty : value;
         }
     }
 }

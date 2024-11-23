@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using Generalibrary;
 using System.IO.Pipes;
-using System.Security.Principal;
 
 namespace DiscordManager
 {
