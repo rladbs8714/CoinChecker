@@ -83,7 +83,7 @@ namespace BitcoinChecker.AutoTrading
                 PurchaseList.Add(data.Market, new List<PurchaseData>());
 
             PurchaseList[data.Market].Add(data);
-            Money -= (data.Price * data.Volume);
+            TryUseMoney(data.Price * data.Volume);
         }
 
         /// <summary>
@@ -91,14 +91,14 @@ namespace BitcoinChecker.AutoTrading
         /// </summary>
         /// <param name="per">매도 비율 (0.0 ~ 1.0)</param>
         /// <returns>매도에 성공했다면 true, 그렇지 않다면 false</returns>
-        public bool TrySellLast(string market, double per)
+        public bool TrySellLast(string market, double per, double price)
         {
             if (!PurchaseList.ContainsKey(market))
                 return false;
             if (per < 0 || per > 1)
                 return false;
 
-            Money += PurchaseList[market].Last().SplitSell(per);
+            Money += PurchaseList[market].Last().SplitSell(price, per);
 
             return true;
         }
@@ -106,7 +106,7 @@ namespace BitcoinChecker.AutoTrading
         /// <summary>
         /// 구매한 모든 종목을 매도한다
         /// </summary>
-        public void SellAll()
+        public void SellAll(double price)
         {
             if (PurchaseList.Count == 0)
                 return;
@@ -115,7 +115,7 @@ namespace BitcoinChecker.AutoTrading
             {
                 foreach (PurchaseData data in list)
                 {
-                    Money = data.SplitSell(1);
+                    Money += data.SplitSell(price, 1);
                 }
             }
 

@@ -12,8 +12,8 @@ namespace BitcoinChecker.AutoTrading
         {
             double money = 10_000;
 
-            AutoTrade at = new AutoTrade("", "", 0, isDebug: true, isTest: true);
-            at.StartSimulationTest(money);
+            AutoTrade at = new AutoTrade("KRW-BTC", "", 10, isDebug: true, isTest: false);
+            // at.StartSimulationTest(money);
 
             Thread.Sleep(-1);
 

@@ -81,7 +81,7 @@ namespace BitcoinChecker.AutoTrading
                 // 매도
 
                 // 1. 전량 매도
-                _profile.SellAll();
+                _profile.SellAll(price);
 
                 // 2. 분할 매도
                 // 구현하고 테스트 해봐야 함

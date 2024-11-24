@@ -15,6 +15,7 @@ namespace BitcoinChecker.Core
      *  
      *  < TODO >
      *  - Exception을 좀 더 세분화 할 필요가 있음. 현재는 일반 Exception 클래스로 처리함. 하지만 발생하는 이유는 각양각색..
+     *  - 현재 각 명령 메서드마다 중복되는 코드가 정말 많은데 이것 좀 정리해야 할 듯
      *  
      *  < History >
      *  2024.06.11 @yoon
@@ -285,6 +286,50 @@ namespace BitcoinChecker.Core
             }
 
             if (orders == null)
+            {
+                LOG.Error(LOG_TYPE, doc, $"요청이 정상적으로 이루어지지 않았습니다.");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 주문 UUID를 통해 해당 주문에 대한 취소 접수를 한다.
+        /// </summary>
+        /// <param name="order">주문 취소 결과</param>
+        /// <param name="uuid">취소할 주문의 UUID</param>
+        /// <param name="identifier">조회용 사용자 지정값</param>
+        /// <returns>주문 취소에 성공했다면 true, 그렇지 않다면 false</returns>
+        /// <exception cref="Exception"></exception>
+        public bool TryDeleteOrder(out Order_VO? order, string uuid, string identifier)
+        {
+            string doc = MethodBase.GetCurrentMethod().Name;
+
+            order = null;
+
+            if (string.IsNullOrEmpty(uuid) && string.IsNullOrEmpty(identifier))
+                throw new Exception($"\'{nameof(uuid)}\' 혹은 \'{nameof(identifier)}\' 둘 중 하나의 값이 반드시 유효해야 합니다.");
+
+            Dictionary<string, string> options = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(uuid))       options.Add("uuid", uuid);
+            if (!string.IsNullOrEmpty(identifier)) options.Add("identifier", identifier);
+
+            if (!TryRequest(out string json, "/v1/order", ERestMethod.Delete, options) || string.IsNullOrEmpty(json))
+                return false;
+
+            try
+            {
+                order = JsonSerializer.Deserialize<Order_VO>(json);
+            }
+            catch (Exception ex)
+            {
+                var err = JsonSerializer.Deserialize<Error_VO>(json);
+                LOG.Error(LOG_TYPE, doc, $"요청이 정상적으로 이루어지지 않았습니다.\n{err.Name}: {err.Message}", exception: ex);
+                return false;
+            }
+
+            if (order == null)
             {
                 LOG.Error(LOG_TYPE, doc, $"요청이 정상적으로 이루어지지 않았습니다.");
                 return false;

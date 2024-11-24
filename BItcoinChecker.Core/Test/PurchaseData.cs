@@ -31,9 +31,9 @@
         /// </summary>
         /// <param name="per">매도 비율 (0.0 ~ 1.0)</param>
         /// <returns>매도한 만큼의 가격</returns>
-        public double SplitSell(double per)
+        public double SplitSell(double price, double per)
         {
-            double r = (Price * Volume) * per;
+            double r = (price * Volume) * per;
             Volume -= (Volume * per);
             return r;
         }

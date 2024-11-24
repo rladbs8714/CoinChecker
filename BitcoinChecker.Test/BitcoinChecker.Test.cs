@@ -29,40 +29,48 @@ namespace BitcoinChecker.Test
             // double krw = double.Parse(account?.Balance);
             // new UpbitCore(isDebug: true).TryOrders(out var order, "KRW-SHIB", UpbitCore.ESide.bid, (krw / ticker.Tickers[0].TradePrice) * 0.9, ticker.Tickers[0].TradePrice, UpbitCore.EOrderType.limit);
 
-            bool loop = true;
-            int count = 200;
-            var startTime = DateTime.Now.AddDays(-1);
-            var endTime = DateTime.Now;
-            string marketCode = "KRW-BTC";
-            List<SecondsCandles_VO> candles = new List<SecondsCandles_VO>();
-            StreamWriter sw = new FileInfo($"result\\{marketCode}.csv").AppendText();
-            sw.AutoFlush = true;
-            while (loop)
+            if (new UpbitCore().TryGetSecondCandles(out var candles, "KRW-BTC", "", 10))
             {
-                int tmpMinutes = (int)(endTime - startTime).TotalMinutes;
-                if (tmpMinutes < count)
+                foreach (var candle in candles)
                 {
-                    count = tmpMinutes;
-                    loop = false;
+                    Console.WriteLine(candle.CandleDateTimeKST);
                 }
-
-                startTime = startTime.AddSeconds(count);
-                string time = startTime.ToString("yyyy-MM-dd HH:mm:ss");
-
-                new UpbitCore(isDebug: true).TryGetSecondCandles(out var mCandles, marketCode, time, count);
-                if (mCandles == null)
-                    break;
-
-                // candles.AddRange(mCandles);
-                // LogManager.Instance.Info(LOG_TYPE, doc, $"[완료:{loopCount++,3}] {time}");
-                Console.WriteLine(time);
-
-                foreach (var candle in mCandles.Reverse())
-                    sw.WriteLine($"{candle.CandleDateTimeUTC},{candle.TradePrice},{candle.CandleAccTradeVolume}");
-
-                Thread.Sleep(110);
             }
-            Console.WriteLine("완료");
+
+            //bool loop = true;
+            //int count = 200;
+            //var startTime = DateTime.Now.AddDays(-1);
+            //var endTime = DateTime.Now;
+            //string marketCode = "KRW-BTC";
+            //List<SecondsCandles_VO> candles = new List<SecondsCandles_VO>();
+            //StreamWriter sw = new FileInfo($"result\\{marketCode}.csv").AppendText();
+            //sw.AutoFlush = true;
+            //while (loop)
+            //{
+            //    int tmpMinutes = (int)(endTime - startTime).TotalMinutes;
+            //    if (tmpMinutes < count)
+            //    {
+            //        count = tmpMinutes;
+            //        loop = false;
+            //    }
+
+            //    startTime = startTime.AddSeconds(count);
+            //    string time = startTime.ToString("yyyy-MM-dd HH:mm:ss");
+
+            //    new UpbitCore(isDebug: true).TryGetSecondCandles(out var mCandles, marketCode, time, count);
+            //    if (mCandles == null)
+            //        break;
+
+            //    // candles.AddRange(mCandles);
+            //    // LogManager.Instance.Info(LOG_TYPE, doc, $"[완료:{loopCount++,3}] {time}");
+            //    Console.WriteLine(time);
+
+            //    foreach (var candle in mCandles.Reverse())
+            //        sw.WriteLine($"{candle.CandleDateTimeUTC},{candle.TradePrice},{candle.CandleAccTradeVolume}");
+
+            //    Thread.Sleep(110);
+            //}
+            //Console.WriteLine("완료");
 
             //ConvertJsonToCsv<SecondsCandles_VO>(candles, true);
             //Console.WriteLine(csv);
