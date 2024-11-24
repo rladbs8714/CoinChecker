@@ -31,7 +31,7 @@ namespace BitcoinChecker.Test
 
             bool loop = true;
             int count = 200;
-            var startTime = DateTime.Now.AddMonths(-3);
+            var startTime = DateTime.Now.AddDays(-1);
             var endTime = DateTime.Now;
             string marketCode = "KRW-BTC";
             List<SecondsCandles_VO> candles = new List<SecondsCandles_VO>();

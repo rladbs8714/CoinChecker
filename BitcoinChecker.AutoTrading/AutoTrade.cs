@@ -3,8 +3,6 @@ using BItcoinChecker.Core;
 using Generalibrary;
 using System.Diagnostics;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Security.Policy;
 
 namespace BitcoinChecker.AutoTrading
 {
@@ -310,7 +308,7 @@ namespace BitcoinChecker.AutoTrading
         /// <summary>
         /// 업비트 사용자 프로필을 반환한다
         /// </summary>
-        private UpbitProfile _profile => _upbitApiTest.GetProfile();
+        private UpbitProfile? Profile => _upbitApiTest.GetProfile();
 
         private double Money; 
 
@@ -347,7 +345,7 @@ namespace BitcoinChecker.AutoTrading
                 throw new ArgumentException("캔들 데이터가 부족합니다.");
 
             // 현재 캔들 거래량
-            double currentVolume = tradeVols.Last();
+            double currentVolume = tradeVols[tradeVols.Count - 1];
 
             // 이전 N개의 평균 거래량 계산
             double averageVolume = tradeVols.SkipLast(1).Average();
@@ -365,7 +363,7 @@ namespace BitcoinChecker.AutoTrading
         {
             double targetProfit = 0.5;
             double stopLoss = 0.2;
-            double currentPrice = prices.Last();
+            double currentPrice = prices[prices.Count - 1];
             double rsi = GetRSI_TEST(prices, prices.Count - 1);
             if (volumeRatio > threshold && rsi < 30)
             {
@@ -374,6 +372,8 @@ namespace BitcoinChecker.AutoTrading
             else
             {
                 double profitRate = (currentPrice - _buyPrice) / _buyPrice;
+                if (double.IsInfinity(profitRate) || double.IsNaN(profitRate))
+                    profitRate = 0;
                 if (profitRate >= targetProfit ||   // 목표 수익률 도달
                     profitRate <= -stopLoss    ||   // 손절 조건
                     volumeRatio < 1 && rsi > 70)    // 매도 신호 발생
@@ -390,7 +390,7 @@ namespace BitcoinChecker.AutoTrading
         /// </summary>
         /// <param name="prices">초봉 캔들</param>
         /// <param name="period">기간</param>
-        /// <returns></returns>
+        /// <returns>rsi</returns>
         /// <exception cref="ArgumentException"></exception>
         public double GetRSI_TEST(List<double> prices, int period)
         {
@@ -470,17 +470,19 @@ namespace BitcoinChecker.AutoTrading
             {
                 List<double> newPrice = prices.GetRange(i - criteria, criteria);
                 List<double> newTradeVols = tradeVols.GetRange(i - criteria, criteria);
+                double currentPrice = prices[i];
 
                 double volumeRatio = CalculateSecondVolumeRatio_TEST(newTradeVols);
-                ESignal signal = GenerateSecondTradeSignal_TEST(newPrice, volumeRatio, 3.0);
+                ESignal signal = GenerateSecondTradeSignal_TEST(newPrice, volumeRatio, 1.2);
 
                 if (signal == ESignal.Buy)
                 {
                     LOG.Info(LOG_TYPE, doc, "매수 신호 발생! 주문을 실행합니다.");
 
-                    double volume = _profile.Money / prices[i];
-                    if (_upbitApiTest.TryOrder(Market, UpbitCore.ESide.bid, volume, prices[i]))
+                    double volume = Profile.Money / prices[i];
+                    if (_upbitApiTest.TryOrder(Market, UpbitCore.ESide.bid, volume, currentPrice))
                     {
+                        _buyPrice = currentPrice;
                         LOG.Info(LOG_TYPE, doc, $"매수 성공!");
                     }
                 }
@@ -498,9 +500,9 @@ namespace BitcoinChecker.AutoTrading
                 }
             }
 
-            _profile.SellAll();
-            double change = ((_profile.Money - Money) / Money) * 100;
-            LOG.Info(LOG_TYPE, doc, $"최종 현금: {_profile.Money}");
+            Profile.SellAll();
+            double change = ((Profile.Money - Money) / Money) * 100;
+            LOG.Info(LOG_TYPE, doc, $"최종 현금: {Profile.Money}");
             string str = change < Money ? "잃었습니다" : "벌었습니다";
             LOG.Info(LOG_TYPE, doc, $"{change}% {str}");
         }
